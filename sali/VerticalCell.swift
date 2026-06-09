@@ -9,6 +9,8 @@ import UIKit
 
 class VerticalCell: UICollectionViewCell {
     
+    static let identifier = "VerticalCell"
+    
     @IBOutlet weak var productImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var ratingLabel: UILabel!
@@ -27,9 +29,7 @@ class VerticalCell: UICollectionViewCell {
     func configure(with product: Product) {
         titleLabel.text = product.displayName
         
-        if let price = product.price {
-            priceLabel.text = "\(price) TL"
-        }
+        priceLabel.text = product.formattedPrice
         
         if let rate = product.rate {
             ratingLabel.text = "\(rate)"

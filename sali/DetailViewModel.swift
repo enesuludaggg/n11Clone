@@ -15,7 +15,13 @@ class DetailViewModel {
     }
     
     var title: String { product.displayName }
-    var price: String { "\(product.price ?? 0.0) TL" }
+    var price: String { "\(product.price ?? 0.0)".withTL }
     var rateText: String { "\(product.rate ?? 0.0)" }
     var imageUrl: String? { product.image }
+}
+
+extension String {
+    var withTL: String {
+        return "\(self) TL"
+    }
 }

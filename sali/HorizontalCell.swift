@@ -9,6 +9,8 @@ import UIKit
 
 class HorizontalCell: UICollectionViewCell {
     
+    static let identifier = "HorizontalCell"
+    
     @IBOutlet weak var productImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var ratingLabel: UILabel!
@@ -31,17 +33,18 @@ class HorizontalCell: UICollectionViewCell {
     func configure(with product: Product) {
         titleLabel.text = product.displayName
         
-        if let price = product.price {
-            priceLabel.text = "\(price) TL"
-        }
-        
-        // Değişiklik burada
-        if let rate = product.rate {
-            ratingLabel.text = "\(rate)"
-        } else {
-            ratingLabel.text = "-"
-        }
+        priceLabel.text = product.formattedPrice
         
         productImageView.loadImage(from: product.image)
+    }
+}
+
+extension Optional where Wrapped == Double {
+    var asRatingString: String {
+        if let rate = self {
+            return "\(rate)"
+        } else {
+            return "-"
+        }
     }
 }

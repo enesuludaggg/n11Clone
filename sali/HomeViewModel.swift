@@ -12,9 +12,16 @@ protocol HomeViewModelDelegate: AnyObject {
     func didError(_ message: String)
 }
 
+enum ProductSortOption {
+    case smart
+    case priceAscending
+    case priceDescending
+    case ratingDescending
+}
+
 class HomeViewModel {
     weak var delegate: HomeViewModelDelegate?
-    private var allVerticalProducts: [Product] = []
+    var allVerticalProducts: [Product] = []
     var horizontalProducts: [Product] = []
     var verticalProducts: [Product] = []
     private var currentPage = 1
@@ -37,27 +44,31 @@ class HomeViewModel {
     }
     
     func search(query: String) {
-        if query.isEmpty {
+        guard !query.isEmpty else {
             verticalProducts = allVerticalProducts
-        } else {
-            verticalProducts = allVerticalProducts.filter { $0.displayName.lowercased().contains(query.lowercased()) }
+            delegate?.didUpdateData()
+            return
         }
+        
+        verticalProducts = allVerticalProducts.filter { $0.displayName.lowercased().contains(query.lowercased()) }
         delegate?.didUpdateData()
     }
     
-    func sortProducts(by type: Int) {
-        switch type {
-        case 0:
+    func sortProducts(by option: ProductSortOption) {
+        switch option {
+        case .smart:
             verticalProducts = allVerticalProducts
-        case 1:
+            
+        case .priceAscending:
             verticalProducts.sort { ($0.price ?? 0) < ($1.price ?? 0) }
-        case 2:
+            
+        case .priceDescending:
             verticalProducts.sort { ($0.price ?? 0) > ($1.price ?? 0) }
-        case 3: 
+            
+        case .ratingDescending:
             verticalProducts.sort { ($0.rate ?? 0) > ($1.rate ?? 0) }
-        default:
-            break
         }
+        
         delegate?.didUpdateData()
     }
 }
@@ -65,18 +76,22 @@ class HomeViewModel {
 extension HomeViewModel: NetworkManagerDelegate {
     func didFetchProducts(_ products: [Product], page: Int) {
         isFetching = false
-        if page == 1 {
-            self.horizontalProducts = Array(products.prefix(5))
-            self.allVerticalProducts = Array(products.suffix(from: 5))
-            self.verticalProducts = allVerticalProducts
-        } else {
-            self.allVerticalProducts.append(contentsOf: products)
-            self.verticalProducts = allVerticalProducts
-        }
-        delegate?.didUpdateData()
+        handleFetchedProducts(products, page: page)
     }
+
     func didFailWithError(_ error: Error) {
         isFetching = false
         delegate?.didError(error.localizedDescription)
+    }
+    
+    private func handleFetchedProducts(_ products: [Product], page: Int) {
+        if page == 1 {
+            self.horizontalProducts = Array(products.prefix(5))
+            self.allVerticalProducts = products
+        } else {
+            self.allVerticalProducts.append(contentsOf: products)
+        }
+        self.verticalProducts = allVerticalProducts
+        delegate?.didUpdateData()
     }
 }
